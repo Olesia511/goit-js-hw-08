@@ -1,28 +1,27 @@
-// import throttle from 'lodash.throttle';
+import throttle from 'lodash.throttle';
 
 const form = document.querySelector('.feedback-form');
-
-form.addEventListener('input', onInput);
-form.addEventListener('submit', onSubmit);
-
-const email = form.children[0].children[0];
-const textarea = form.children[1].children[0];
-
+const emailInput = form.children[0].children[0];
+const textareaInput = form.children[1].children[0];
 const userInfo = {
   email: '',
   message: '',
 };
+const parseLocal = JSON.parse(localStorage.getItem('feedback-form-state'));
 
-const parseLocal =
-  JSON.parse(localStorage.getItem('feedback-form-state')) || '';
-console.log(`parseLocal`, parseLocal);
+if (!parseLocal) {
+  localStorage.setItem(
+    'feedback-form-state',
+    JSON.stringify({ userInfo: { email: '', message: '' } })
+  );
+}
 
-email.value = parseLocal.userInfo.email || '';
-textarea.value = parseLocal.userInfo.message || '';
-console.log('emailParse', email.value);
-console.log('messageParse', textarea.value);
+if (parseLocal.userInfo.email !== '' || parseLocal.userInfo.message !== '') {
+  emailInput.value = parseLocal.userInfo.email;
+  textareaInput.value = parseLocal.userInfo.message;
+}
 
-function onInput(e) {
+const throttleFunc = throttle(e => {
   const { target } = e;
 
   if (target.name === 'email') {
@@ -35,18 +34,24 @@ function onInput(e) {
     localStorage.setItem('feedback-form-state', JSON.stringify({ userInfo }));
   }
 
-  userInfo.email = email.value;
+  userInfo.email = emailInput.value;
   localStorage.setItem('feedback-form-state', JSON.stringify({ userInfo }));
 
-  userInfo.message = textarea.value;
+  userInfo.message = textareaInput.value;
   localStorage.setItem('feedback-form-state', JSON.stringify({ userInfo }));
-}
+}, 500);
+
+form.addEventListener('input', throttleFunc);
+form.addEventListener('submit', onSubmit);
 
 function onSubmit(e) {
   e.preventDefault();
+  if (emailInput.value === '' || textareaInput.value === '') {
+    return;
+  }
   console.log(JSON.parse(localStorage.getItem('feedback-form-state')).userInfo);
 
   localStorage.removeItem('feedback-form-state');
-  email.value = '';
-  textarea.value = '';
+  emailInput.value = '';
+  textareaInput.value = '';
 }
