@@ -46,7 +46,8 @@ form.addEventListener('submit', onSubmit);
 
 function onSubmit(e) {
   e.preventDefault();
-  if (emailInput.value === '' || textareaInput.value === '') {
+  if (emailInput.value.trim() === '' || textareaInput.value.trim() === '') {
+    alert(`Please fill in all fields!`);
     return;
   }
   console.log(JSON.parse(localStorage.getItem('feedback-form-state')).userInfo);
